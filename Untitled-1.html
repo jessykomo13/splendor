@@ -1,0 +1,1302 @@
+^^<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Splendor - Mode Infini</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #2d1b40, #1a0f26);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .setup-screen {
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            max-width: 600px;
+            margin: 50px auto;
+        }
+
+        .setup-screen h2 {
+            color: #ffd700;
+            margin-bottom: 30px;
+        }
+
+        .mode-selection {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            padding: 20px;
+            background: linear-gradient(145deg, #4a6741, #2d4a2d);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            min-width: 200px;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .mode-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .mode-btn.selected {
+            background: linear-gradient(145deg, #ffd700, #e0a800);
+            color: #000;
+        }
+
+        .mode-btn .title {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .mode-btn .description {
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .player-selection {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .player-btn {
+            padding: 15px 25px;
+            background: linear-gradient(145deg, #007bff, #0056b3);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            min-width: 80px;
+        }
+
+        .player-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .player-btn.selected {
+            background: linear-gradient(145deg, #28a745, #1e7e34);
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .main-area {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .players-area {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            min-width: 350px;
+        }
+
+        .infinite-indicator {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .player-panel {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .player-panel.active {
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .player-name {
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .gems-bank {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .gem-pile {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            min-width: 80px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .gem-pile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,255,255,0.2);
+        }
+
+        .gem-pile.selected {
+            border-color: #ffd700;
+            transform: translateY(-2px);
+        }
+
+        .gem-white { background-color: #f8f9fa; color: #000; }
+        .gem-blue { background-color: #0066cc; }
+        .gem-green { background-color: #28a745; }
+        .gem-red { background-color: #dc3545; }
+        .gem-black { background-color: #343a40; }
+        .gem-gold { background-color: #ffd700; color: #000; }
+
+        .cards-area {
+            margin-top: 20px;
+        }
+
+        .cards-tier {
+            margin-bottom: 20px;
+        }
+
+        .tier-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #ffd700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .infinite-badge {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            animation: pulse 2s infinite;
+        }
+
+        .cards-row {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .card {
+            min-width: 140px;
+            height: 180px;
+            background: linear-gradient(145deg, #fff, #e6e6e6);
+            border-radius: 10px;
+            padding: 10px;
+            color: #000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            position: relative;
+        }
+
+        .gems-missing {
+            position: absolute;
+            top: 5px;
+            left: 8px;
+            background: rgba(220, 53, 69, 0.95);
+            color: white;
+            border-radius: 8px;
+            padding: 4px 6px;
+            font-size: 10px;
+            font-weight: bold;
+            display: none;
+            max-width: 120px;
+            line-height: 1.2;
+        }
+
+        .gems-missing.visible {
+            display: block;
+        }
+
+        .missing-gem {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            margin: 1px 0;
+        }
+
+        .missing-gem-icon {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 1px solid #fff;
+        }
+
+        .card:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .card.can-buy {
+            border-color: #28a745;
+            box-shadow: 0 0 15px rgba(40, 167, 69, 0.8);
+        }
+
+        .card-points {
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            background: #ffd700;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            color: #000;
+        }
+
+        .card-gem {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin: 5px auto;
+            border: 2px solid #333;
+        }
+
+        .card-cost {
+            font-size: 11px;
+            margin-top: 10px;
+        }
+
+        .cost-gem {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin: 2px 0;
+        }
+
+        .cost-gem-icon {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 1px solid #333;
+        }
+
+        .gem-count {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+            padding: 3px 8px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            background: linear-gradient(145deg, #4a6741, #2d4a2d);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-primary { background: linear-gradient(145deg, #007bff, #0056b3); }
+        .btn-success { background: linear-gradient(145deg, #28a745, #1e7e34); }
+        .btn-warning { background: linear-gradient(145deg, #ffc107, #e0a800); color: #000; }
+
+        .game-info {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .turn-info {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        @media (max-width: 1200px) {
+            .game-board {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .gems-bank, .cards-row {
+                justify-content: center;
+            }
+        }
+
+        .score-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>💎 Splendor - Mode Infini 💎</h1>
+        
+        <div id="setup-screen" class="setup-screen">
+            <h2>Configuration de la partie</h2>
+            
+            <div class="mode-selection">
+                <button class="mode-btn" data-mode="normal">
+                    <div class="title">🎯 Mode Normal</div>
+                    <div class="description">Parties classiques avec paquets limités et objectif de 15 points</div>
+                </button>
+                <button class="mode-btn" data-mode="infinite">
+                    <div class="title">♾️ Mode Infini</div>
+                    <div class="description">Cartes infinies générées aléatoirement - Jouez sans fin !</div>
+                </button>
+            </div>
+            
+            <div class="player-selection">
+                <button class="player-btn" data-players="1">1 Joueur</button>
+                <button class="player-btn" data-players="2">2 Joueurs</button>
+                <button class="player-btn" data-players="3">3 Joueurs</button>
+                <button class="player-btn" data-players="4">4 Joueurs</button>
+            </div>
+            
+            <button id="start-game" class="btn btn-success" style="padding: 15px 30px; font-size: 16px;" disabled>Commencer la partie</button>
+        </div>
+
+        <div id="game-screen" class="game-screen" style="display: none;">
+            <div id="infinite-indicator" class="infinite-indicator" style="display: none;">
+                ♾️ MODE INFINI ACTIVÉ - Cartes générées infiniment ! ♾️
+            </div>
+
+            <div class="game-info">
+                <div class="turn-info" id="turn-info">Tour du Joueur 1</div>
+                <div class="message" id="game-message">Sélectionnez des gemmes ou achetez une carte</div>
+            </div>
+
+            <div class="game-board">
+                <div class="main-area">
+                    <h3>Banque de Gemmes</h3>
+                    <div class="gems-bank" id="gems-bank"></div>
+
+                    <div class="cards-area">
+                        <div class="cards-tier">
+                            <div class="tier-title">
+                                Niveau 3 
+                                <div id="tier3-badge" class="infinite-badge" style="display: none;">♾️ INFINI</div>
+                            </div>
+                            <div class="cards-row" id="tier3-cards"></div>
+                        </div>
+                        <div class="cards-tier">
+                            <div class="tier-title">
+                                Niveau 2 
+                                <div id="tier2-badge" class="infinite-badge" style="display: none;">♾️ INFINI</div>
+                            </div>
+                            <div class="cards-row" id="tier2-cards"></div>
+                        </div>
+                        <div class="cards-tier">
+                            <div class="tier-title">
+                                Niveau 1 
+                                <div id="tier1-badge" class="infinite-badge" style="display: none;">♾️ INFINI</div>
+                            </div>
+                            <div class="cards-row" id="tier1-cards"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="players-area" id="players-area">
+                    <div class="actions">
+                        <button class="btn btn-primary" id="take-gems-btn">Prendre Gemmes</button>
+                        <button class="btn btn-warning" id="reset-selection-btn">Annuler</button>
+                        <button class="btn btn-success" id="pass-turn-btn">Passer le tour</button>
+                        <button class="btn" id="new-game-btn" style="background: linear-gradient(145deg, #6c757d, #495057);">Nouvelle Partie</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SplendorInfiniteGame {
+            constructor() {
+                this.gameMode = 'normal';
+                this.numPlayers = 1;
+                this.currentPlayer = 0;
+                this.players = [];
+                this.selectedGems = [];
+                this.gameEnded = false;
+                
+                this.initSetup();
+            }
+
+            initSetup() {
+                // Écouteurs pour la sélection du mode
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+                        e.target.closest('.mode-btn').classList.add('selected');
+                        this.gameMode = e.target.closest('.mode-btn').dataset.mode;
+                        this.checkStartEnabled();
+                    });
+                });
+
+                // Écouteurs pour la sélection du nombre de joueurs
+                document.querySelectorAll('.player-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('selected'));
+                        e.target.classList.add('selected');
+                        this.numPlayers = parseInt(e.target.dataset.players);
+                        this.checkStartEnabled();
+                    });
+                });
+
+                document.getElementById('start-game').addEventListener('click', () => {
+                    this.startGame();
+                });
+            }
+
+            checkStartEnabled() {
+                const modeSelected = document.querySelector('.mode-btn.selected');
+                const playersSelected = document.querySelector('.player-btn.selected');
+                document.getElementById('start-game').disabled = !(modeSelected && playersSelected);
+            }
+
+            startGame() {
+                document.getElementById('setup-screen').style.display = 'none';
+                document.getElementById('game-screen').style.display = 'block';
+                
+                if (this.gameMode === 'infinite') {
+                    document.getElementById('infinite-indicator').style.display = 'block';
+                    document.querySelectorAll('.infinite-badge').forEach(badge => {
+                        badge.style.display = 'block';
+                    });
+                }
+                
+                this.initGame();
+            }
+
+            initGame() {
+                // Ajuster les gemmes selon le nombre de joueurs
+                const gemCounts = {
+                    1: 4,
+                    2: 4,
+                    3: 5,
+                    4: 7
+                };
+
+                this.gems = {
+                    white: gemCounts[this.numPlayers],
+                    blue: gemCounts[this.numPlayers],
+                    green: gemCounts[this.numPlayers],
+                    red: gemCounts[this.numPlayers],
+                    black: gemCounts[this.numPlayers],
+                    gold: 5
+                };
+
+                // Créer les joueurs
+                this.players = [];
+                for (let i = 0; i < this.numPlayers; i++) {
+                    this.players.push({
+                        name: 'Joueur ' + (i + 1),
+                        gems: { white: 0, blue: 0, green: 0, red: 0, black: 0, gold: 0 },
+                        bonuses: { white: 0, blue: 0, green: 0, red: 0, black: 0 },
+                        score: 0,
+                        cards: []
+                    });
+                }
+
+                this.currentPlayer = 0;
+                this.selectedGems = [];
+                this.gameEnded = false;
+
+                // Générer les cartes selon le mode
+                if (this.gameMode === 'infinite') {
+                    this.initInfiniteMode();
+                } else {
+                    this.initNormalMode();
+                }
+
+                this.renderAll();
+                this.bindEvents();
+                this.updateMessage('Partie commencée ! Bonne chance !');
+            }
+
+            initInfiniteMode() {
+                // En mode infini, on génère toujours 4 cartes par niveau
+                this.visibleCards = {
+                    tier1: [],
+                    tier2: [],
+                    tier3: []
+                };
+
+                // Générer les cartes initiales
+                for (let i = 0; i < 4; i++) {
+                    this.visibleCards.tier1.push(this.generateRandomCard(1));
+                    this.visibleCards.tier2.push(this.generateRandomCard(2));
+                    this.visibleCards.tier3.push(this.generateRandomCard(3));
+                }
+            }
+
+            initNormalMode() {
+                // Mode normal avec paquets limités
+                this.cardDecks = {
+                    tier1: this.shuffleArray(this.getAllTier1Cards()),
+                    tier2: this.shuffleArray(this.getAllTier2Cards()),
+                    tier3: this.shuffleArray(this.getAllTier3Cards())
+                };
+
+                this.visibleCards = {
+                    tier1: [],
+                    tier2: [],
+                    tier3: []
+                };
+
+                // Piocher les cartes initiales
+                ['tier1', 'tier2', 'tier3'].forEach(tier => {
+                    for (let i = 0; i < 4; i++) {
+                        if (this.cardDecks[tier].length > 0) {
+                            this.visibleCards[tier].push(this.cardDecks[tier].pop());
+                        }
+                    }
+                });
+            }
+
+            generateRandomCard(level) {
+                const colors = ['white', 'blue', 'green', 'red', 'black'];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                let card = {
+                    bonus: randomColor,
+                    cost: {}
+                };
+
+                // Générer points et coûts selon le niveau
+                if (level === 1) {
+                    card.points = Math.random() < 0.7 ? 0 : 1;
+                    
+                    // Coût simple pour niveau 1
+                    const numCosts = Math.floor(Math.random() * 3) + 1; // 1-3 types de gemmes
+                    const availableColors = colors.slice();
+                    
+                    for (let i = 0; i < numCosts; i++) {
+                        const costColor = availableColors.splice(Math.floor(Math.random() * availableColors.length), 1)[0];
+                        card.cost[costColor] = Math.floor(Math.random() * 3) + 1; // 1-3 gemmes
+                    }
+                    
+                } else if (level === 2) {
+                    card.points = Math.floor(Math.random() * 3) + 1; // 1-3 points
+                    
+                    // Coût moyen pour niveau 2
+                    const numCosts = Math.floor(Math.random() * 4) + 2; // 2-5 types de gemmes
+                    const availableColors = colors.slice();
+                    
+                    for (let i = 0; i < Math.min(numCosts, availableColors.length); i++) {
+                        const costColor = availableColors.splice(Math.floor(Math.random() * availableColors.length), 1)[0];
+                        card.cost[costColor] = Math.floor(Math.random() * 4) + 2; // 2-5 gemmes
+                    }
+                    
+                } else if (level === 3) {
+                    card.points = Math.floor(Math.random() * 3) + 3; // 3-5 points
+                    
+                    // Coût élevé pour niveau 3
+                    const numCosts = Math.floor(Math.random() * 4) + 2; // 2-5 types de gemmes
+                    const availableColors = colors.slice();
+                    
+                    for (let i = 0; i < Math.min(numCosts, availableColors.length); i++) {
+                        const costColor = availableColors.splice(Math.floor(Math.random() * availableColors.length), 1)[0];
+                        card.cost[costColor] = Math.floor(Math.random() * 5) + 3; // 3-7 gemmes
+                    }
+                }
+
+                return card;
+            }
+
+            refillCard(tier, index) {
+                if (this.gameMode === 'infinite') {
+                    // En mode infini, générer une nouvelle carte aléatoire
+                    const level = parseInt(tier.replace('tier', ''));
+                    this.visibleCards[tier][index] = this.generateRandomCard(level);
+                } else {
+                    // Mode normal avec paquets limités
+                    if (this.cardDecks[tier].length > 0) {
+                        this.visibleCards[tier][index] = this.cardDecks[tier].pop();
+                    } else {
+                        this.visibleCards[tier].splice(index, 1);
+                    }
+                }
+            }
+
+            getAllTier1Cards() {
+                return [
+                    { points: 0, bonus: 'white', cost: { black: 3 } },
+                    { points: 0, bonus: 'white', cost: { blue: 2, green: 1 } },
+                    { points: 0, bonus: 'white', cost: { red: 1, green: 1, blue: 1, black: 1 } },
+                    { points: 1, bonus: 'white', cost: { white: 4 } },
+                    { points: 0, bonus: 'blue', cost: { white: 3 } },
+                    { points: 0, bonus: 'blue', cost: { white: 2, red: 1 } },
+                    { points: 1, bonus: 'blue', cost: { blue: 4 } },
+                    { points: 0, bonus: 'green', cost: { blue: 3 } },
+                    { points: 0, bonus: 'green', cost: { blue: 2, black: 1 } },
+                    { points: 1, bonus: 'green', cost: { green: 4 } },
+                    { points: 0, bonus: 'red', cost: { green: 3 } },
+                    { points: 0, bonus: 'red', cost: { green: 2, white: 1 } },
+                    { points: 1, bonus: 'red', cost: { red: 4 } },
+                    { points: 0, bonus: 'black', cost: { red: 3 } },
+                    { points: 0, bonus: 'black', cost: { red: 2, blue: 1 } },
+                    { points: 1, bonus: 'black', cost: { black: 4 } }
+                ];
+            }
+
+            getAllTier2Cards() {
+                return [
+                    { points: 1, bonus: 'white', cost: { white: 3, blue: 2, green: 2 } },
+                    { points: 2, bonus: 'white', cost: { white: 5, blue: 1 } },
+                    { points: 1, bonus: 'blue', cost: { blue: 3, white: 2, red: 2 } },
+                    { points: 2, bonus: 'blue', cost: { blue: 5, green: 1 } },
+                    { points: 1, bonus: 'green', cost: { green: 3, blue: 2, black: 2 } },
+                    { points: 2, bonus: 'green', cost: { green: 5, red: 1 } },
+                    { points: 1, bonus: 'red', cost: { red: 3, green: 2, white: 2 } },
+                    { points: 2, bonus: 'red', cost: { red: 5, black: 1 } },
+                    { points: 1, bonus: 'black', cost: { black: 3, red: 2, blue: 2 } },
+                    { points: 2, bonus: 'black', cost: { black: 5, white: 1 } }
+                ];
+            }
+
+            getAllTier3Cards() {
+                return [
+                    { points: 3, bonus: 'white', cost: { white: 6, blue: 1, green: 1 } },
+                    { points: 4, bonus: 'white', cost: { white: 7 } },
+                    { points: 3, bonus: 'blue', cost: { blue: 6, white: 1, red: 1 } },
+                    { points: 4, bonus: 'blue', cost: { blue: 7 } },
+                    { points: 3, bonus: 'green', cost: { green: 6, blue: 1, black: 1 } },
+                    { points: 4, bonus: 'green', cost: { green: 7 } },
+                    { points: 3, bonus: 'red', cost: { red: 6, green: 1, white: 1 } },
+                    { points: 4, bonus: 'red', cost: { red: 7 } },
+                    { points: 3, bonus: 'black', cost: { black: 6, red: 1, blue: 1 } },
+                    { points: 4, bonus: 'black', cost: { black: 7 } }
+                ];
+            }
+
+            shuffleArray(array) {
+                const shuffled = array.slice();
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    const temp = shuffled[i];
+                    shuffled[i] = shuffled[j];
+                    shuffled[j] = temp;
+                }
+                return shuffled;
+            }
+
+            renderAll() {
+                this.renderGemsBank();
+                this.renderCards();
+                this.renderPlayers();
+                this.updateTurnInfo();
+            }
+
+            renderGemsBank() {
+                const bank = document.getElementById('gems-bank');
+                bank.innerHTML = '';
+
+                const gemColors = ['white', 'blue', 'green', 'red', 'black', 'gold'];
+                
+                gemColors.forEach(color => {
+                    if (this.gems[color] > 0) {
+                        const pile = document.createElement('div');
+                        pile.className = 'gem-pile gem-' + color;
+                        pile.dataset.color = color;
+                        pile.innerHTML = '<div>' + this.getGemName(color) + '</div><div>' + this.gems[color] + '</div>';
+                        bank.appendChild(pile);
+                    }
+                });
+            }
+
+            renderCards() {
+                const tiers = ['tier1', 'tier2', 'tier3'];
+                
+                tiers.forEach(tier => {
+                    const container = document.getElementById(tier + '-cards');
+                    container.innerHTML = '';
+
+                    this.visibleCards[tier].forEach((card, index) => {
+                        const cardElement = this.createCardElement(card, tier, index);
+                        container.appendChild(cardElement);
+                    });
+                });
+            }
+
+            createCardElement(card, tier, index) {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card';
+                cardDiv.dataset.tier = tier;
+                cardDiv.dataset.index = index;
+
+                const player = this.players[this.currentPlayer];
+                const canBuy = this.canBuyCard(player, card);
+                const missingDetails = this.calculateDetailedMissing(player, card);
+                
+                if (canBuy) {
+                    cardDiv.classList.add('can-buy');
+                }
+
+                let costHtml = '';
+                const costColors = Object.keys(card.cost);
+                costColors.forEach(color => {
+                    costHtml += '<div class="cost-gem">';
+                    costHtml += '<div class="cost-gem-icon gem-' + color + '"></div>';
+                    costHtml += '<span>' + card.cost[color] + '</span>';
+                    costHtml += '</div>';
+                });
+
+                let missingHtml = '';
+                if (missingDetails.length > 0) {
+                    let missingContent = '';
+                    missingDetails.forEach(missing => {
+                        missingContent += '<div class="missing-gem">';
+                        missingContent += '<div class="missing-gem-icon gem-' + missing.color + '"></div>';
+                        missingContent += '<span>' + missing.count + ' ' + this.getGemName(missing.color) + '</span>';
+                        missingContent += '</div>';
+                    });
+                    missingHtml = '<div class="gems-missing visible">' + missingContent + '</div>';
+                }
+
+                cardDiv.innerHTML = missingHtml +
+                                   '<div class="card-points">' + card.points + '</div>' +
+                                   '<div class="card-gem gem-' + card.bonus + '"></div>' +
+                                   '<div class="card-cost">' + costHtml + '</div>';
+
+                return cardDiv;
+            }
+
+            renderPlayers() {
+                const container = document.getElementById('players-area');
+                
+                // Garder les boutons d'action
+                const actionsDiv = container.querySelector('.actions');
+                container.innerHTML = '';
+                
+                this.players.forEach((player, index) => {
+                    const playerDiv = document.createElement('div');
+                    playerDiv.className = 'player-panel';
+                    if (index === this.currentPlayer) {
+                        playerDiv.classList.add('active');
+                    }
+                    
+                    let gemsHtml = '';
+                    const gemColors = ['white', 'blue', 'green', 'red', 'black', 'gold'];
+                    gemColors.forEach(color => {
+                        if (player.gems[color] > 0) {
+                            gemsHtml += '<div class="gem-count">';
+                            gemsHtml += '<span>' + this.getGemName(color) + '</span>';
+                            gemsHtml += '<span>' + player.gems[color] + '</span>';
+                            gemsHtml += '</div>';
+                        }
+                    });
+
+                    let bonusesHtml = '';
+                    const bonusColors = ['white', 'blue', 'green', 'red', 'black'];
+                    bonusColors.forEach(color => {
+                        if (player.bonuses[color] > 0) {
+                            bonusesHtml += '<div class="gem-count">';
+                            bonusesHtml += '<span>' + this.getGemName(color) + '</span>';
+                            bonusesHtml += '<span>' + player.bonuses[color] + '</span>';
+                            bonusesHtml += '</div>';
+                        }
+                    });
+
+                    playerDiv.innerHTML = '<div class="player-name">' + player.name + ' - <span class="score-display">' + player.score + ' pts</span></div>' +
+                                         '<div style="font-size: 12px; margin-bottom: 8px;"><strong>Gemmes:</strong></div>' +
+                                         '<div style="max-height: 80px; overflow-y: auto;">' + 
+                                         (gemsHtml || '<div style="text-align: center; opacity: 0.7;">Aucune gemme</div>') +
+                                         '</div>' +
+                                         '<div style="font-size: 12px; margin: 8px 0;"><strong>Bonus:</strong></div>' +
+                                         '<div style="max-height: 60px; overflow-y: auto;">' + 
+                                         (bonusesHtml || '<div style="text-align: center; opacity: 0.7;">Aucun bonus</div>') +
+                                         '</div>';
+                    
+                    container.appendChild(playerDiv);
+                });
+                
+                // Remettre les boutons d'action
+                container.appendChild(actionsDiv);
+            }
+
+            bindEvents() {
+                // Sélection des gemmes
+                document.addEventListener('click', (e) => {
+                    if (e.target.closest('.gem-pile') && !this.gameEnded) {
+                        this.selectGem(e.target.closest('.gem-pile').dataset.color);
+                    }
+                });
+
+                // Achat de cartes
+                document.addEventListener('click', (e) => {
+                    if (e.target.closest('.card') && !this.gameEnded) {
+                        const card = e.target.closest('.card');
+                        this.buyCard(card.dataset.tier, parseInt(card.dataset.index));
+                    }
+                });
+
+                // Boutons d'action
+                document.getElementById('take-gems-btn').addEventListener('click', () => this.takeGems());
+                document.getElementById('reset-selection-btn').addEventListener('click', () => this.resetSelection());
+                document.getElementById('pass-turn-btn').addEventListener('click', () => this.passTurn());
+                document.getElementById('new-game-btn').addEventListener('click', () => this.newGame());
+            }
+
+            selectGem(color) {
+                if (this.gameEnded) return;
+
+                if (color === 'gold') {
+                    this.updateMessage("L'or ne peut pas être pris directement !");
+                    return;
+                }
+
+                const index = this.selectedGems.indexOf(color);
+                if (index > -1) {
+                    this.selectedGems.splice(index, 1);
+                } else {
+                    if (this.selectedGems.length >= 3) {
+                        this.updateMessage("Maximum 3 gemmes à la fois !");
+                        return;
+                    }
+
+                    if (this.selectedGems.length === 2 && this.selectedGems[0] === this.selectedGems[1]) {
+                        this.updateMessage("Si vous prenez 2 gemmes identiques, vous ne pouvez pas en prendre d'autres !");
+                        return;
+                    }
+
+                    if (this.selectedGems.length === 1 && this.selectedGems[0] === color) {
+                        if (this.gems[color] < 4) {
+                            this.updateMessage("Il faut au moins 4 gemmes de cette couleur pour en prendre 2 !");
+                            return;
+                        }
+                        this.selectedGems.push(color);
+                    } else if (this.selectedGems.length === 0) {
+                        this.selectedGems.push(color);
+                    } else {
+                        if (this.selectedGems.includes(color)) {
+                            this.updateMessage("Vous ne pouvez pas mélanger gemmes identiques et différentes !");
+                            return;
+                        }
+                        this.selectedGems.push(color);
+                    }
+                }
+
+                this.updateGemSelection();
+                const selectionText = this.selectedGems.map(c => this.getGemName(c)).join(', ');
+                this.updateMessage('Sélection: ' + selectionText);
+            }
+
+            takeGems() {
+                if (this.gameEnded) return;
+
+                if (this.selectedGems.length === 0) {
+                    this.updateMessage("Sélectionnez d'abord des gemmes !");
+                    return;
+                }
+
+                const player = this.players[this.currentPlayer];
+                let totalGems = 0;
+                const gemColors = ['white', 'blue', 'green', 'red', 'black', 'gold'];
+                gemColors.forEach(color => {
+                    totalGems += player.gems[color];
+                });
+
+                if (totalGems + this.selectedGems.length > 10) {
+                    this.updateMessage("Vous ne pouvez avoir que 10 gemmes maximum !");
+                    return;
+                }
+
+                this.selectedGems.forEach(color => {
+                    player.gems[color]++;
+                    this.gems[color]--;
+                });
+
+                const takenText = this.selectedGems.map(c => this.getGemName(c)).join(', ');
+                this.updateMessage(player.name + ' a pris: ' + takenText);
+                this.selectedGems = [];
+                this.updateGemSelection();
+                
+                this.nextTurn();
+            }
+
+            canBuyCard(player, card) {
+                let goldNeeded = 0;
+                const costColors = Object.keys(card.cost);
+                
+                costColors.forEach(color => {
+                    const needed = card.cost[color];
+                    const available = (player.gems[color] || 0) + (player.bonuses[color] || 0);
+                    
+                    if (available < needed) {
+                        goldNeeded += needed - available;
+                    }
+                });
+                
+                return goldNeeded <= (player.gems.gold || 0);
+            }
+
+            calculateMissingGems(player, card) {
+                let totalMissing = 0;
+                const costColors = Object.keys(card.cost);
+                
+                costColors.forEach(color => {
+                    const needed = card.cost[color];
+                    const available = (player.gems[color] || 0) + (player.bonuses[color] || 0);
+                    
+                    if (available < needed) {
+                        totalMissing += needed - available;
+                    }
+                });
+                
+                // Soustraire l'or disponible
+                const goldAvailable = player.gems.gold || 0;
+                totalMissing = Math.max(0, totalMissing - goldAvailable);
+                
+                return totalMissing;
+            }
+
+            calculateDetailedMissing(player, card) {
+                const missing = [];
+                const costColors = Object.keys(card.cost);
+                let totalGoldNeeded = 0;
+                
+                // Calculer combien manque pour chaque couleur
+                costColors.forEach(color => {
+                    const needed = card.cost[color];
+                    const available = (player.gems[color] || 0) + (player.bonuses[color] || 0);
+                    
+                    if (available < needed) {
+                        const shortage = needed - available;
+                        totalGoldNeeded += shortage;
+                        missing.push({
+                            color: color,
+                            count: shortage
+                        });
+                    }
+                });
+                
+                // Si on a assez d'or pour couvrir tout, pas de manque
+                const goldAvailable = player.gems.gold || 0;
+                if (goldAvailable >= totalGoldNeeded) {
+                    return [];
+                }
+                
+                // Sinon, calculer ce qui manque vraiment après utilisation de l'or
+                const goldToUse = Math.min(goldAvailable, totalGoldNeeded);
+                let remainingGoldToDistribute = goldToUse;
+                const finalMissing = [];
+                
+                missing.forEach(item => {
+                    let actualMissing = item.count;
+                    
+                    if (remainingGoldToDistribute > 0) {
+                        const goldUsedHere = Math.min(remainingGoldToDistribute, actualMissing);
+                        actualMissing -= goldUsedHere;
+                        remainingGoldToDistribute -= goldUsedHere;
+                    }
+                    
+                    if (actualMissing > 0) {
+                        finalMissing.push({
+                            color: item.color,
+                            count: actualMissing
+                        });
+                    }
+                });
+                
+                return finalMissing;
+            }
+
+            buyCard(tier, index) {
+                if (this.gameEnded) return;
+
+                const card = this.visibleCards[tier][index];
+                const player = this.players[this.currentPlayer];
+                
+                if (!this.canBuyCard(player, card)) {
+                    this.updateMessage("Vous n'avez pas assez de ressources pour cette carte !");
+                    return;
+                }
+
+                // Calculer le paiement
+                let goldNeeded = 0;
+                const payment = {};
+                const costColors = Object.keys(card.cost);
+                
+                costColors.forEach(color => {
+                    const needed = card.cost[color];
+                    const bonus = player.bonuses[color] || 0;
+                    const gems = player.gems[color] || 0;
+                    
+                    if (bonus >= needed) {
+                        payment[color] = 0;
+                    } else {
+                        const remaining = needed - bonus;
+                        if (gems >= remaining) {
+                            payment[color] = remaining;
+                        } else {
+                            payment[color] = gems;
+                            goldNeeded += remaining - gems;
+                        }
+                    }
+                });
+
+                // Effectuer le paiement
+                costColors.forEach(color => {
+                    if (payment[color] > 0) {
+                        player.gems[color] -= payment[color];
+                        this.gems[color] += payment[color];
+                    }
+                });
+
+                if (goldNeeded > 0) {
+                    player.gems.gold -= goldNeeded;
+                    this.gems.gold += goldNeeded;
+                }
+
+                // Ajouter les bénéfices
+                player.score += card.points;
+                player.bonuses[card.bonus]++;
+                player.cards.push(card);
+
+                // Remplacer la carte
+                this.refillCard(tier, index);
+
+                this.updateMessage(player.name + ' a acheté une carte ! +' + card.points + ' point(s) et bonus ' + this.getGemName(card.bonus));
+
+                this.renderAll();
+                
+                // En mode normal, vérifier la victoire
+                if (this.gameMode === 'normal') {
+                    this.checkWin();
+                }
+                
+                if (!this.gameEnded) {
+                    this.nextTurn();
+                }
+            }
+
+            passTurn() {
+                if (this.gameEnded) return;
+                
+                this.selectedGems = [];
+                this.updateGemSelection();
+                this.nextTurn();
+            }
+
+            nextTurn() {
+                this.currentPlayer = (this.currentPlayer + 1) % this.numPlayers;
+                this.selectedGems = [];
+                this.updateGemSelection();
+                this.renderAll();
+            }
+
+            checkWin() {
+                if (this.gameMode === 'infinite') return; // Pas de victoire en mode infini
+                
+                const winner = this.players.find(player => player.score >= 15);
+                if (winner) {
+                    this.gameEnded = true;
+                    this.showEndGame(winner);
+                }
+            }
+
+            showEndGame(winner) {
+                const endScreen = document.createElement('div');
+                endScreen.style.position = 'fixed';
+                endScreen.style.top = '0';
+                endScreen.style.left = '0';
+                endScreen.style.right = '0';
+                endScreen.style.bottom = '0';
+                endScreen.style.background = 'rgba(0,0,0,0.8)';
+                endScreen.style.display = 'flex';
+                endScreen.style.alignItems = 'center';
+                endScreen.style.justifyContent = 'center';
+                endScreen.style.zIndex = '1000';
+
+                const content = document.createElement('div');
+                content.style.background = 'linear-gradient(145deg, #2d1b40, #1a0f26)';
+                content.style.borderRadius = '20px';
+                content.style.padding = '40px';
+                content.style.textAlign = 'center';
+                content.style.border = '3px solid #ffd700';
+
+                let playersScoreText = '';
+                this.players.forEach(p => {
+                    playersScoreText += p.name + ': ' + p.score + ' points<br>';
+                });
+
+                content.innerHTML = '<div style="color: #ffd700; font-size: 36px; margin-bottom: 20px;">🎉 ' + winner.name + ' remporte la victoire ! 🎉</div>' +
+                                   '<div style="font-size: 24px; margin: 20px 0;">Score final: ' + winner.score + ' points</div>' +
+                                   '<div style="margin: 20px 0;">' + playersScoreText + '</div>' +
+                                   '<button class="btn btn-success" style="padding: 15px 30px; font-size: 16px;">Nouvelle Partie</button>';
+
+                content.querySelector('button').addEventListener('click', () => {
+                    document.body.removeChild(endScreen);
+                    this.newGame();
+                });
+
+                endScreen.appendChild(content);
+                document.body.appendChild(endScreen);
+            }
+
+            updateTurnInfo() {
+                if (!this.gameEnded) {
+                    document.getElementById('turn-info').textContent = 'Tour de ' + this.players[this.currentPlayer].name;
+                }
+            }
+
+            resetSelection() {
+                this.selectedGems = [];
+                this.updateGemSelection();
+                this.updateMessage("Sélection annulée");
+            }
+
+            updateGemSelection() {
+                const gemPiles = document.querySelectorAll('.gem-pile');
+                gemPiles.forEach(pile => {
+                    pile.classList.remove('selected');
+                    if (this.selectedGems.includes(pile.dataset.color)) {
+                        pile.classList.add('selected');
+                    }
+                });
+            }
+
+            updateMessage(text) {
+                document.getElementById('game-message').textContent = text;
+            }
+
+            getGemName(color) {
+                const names = {
+                    'white': 'Diamant',
+                    'blue': 'Saphir', 
+                    'green': 'Émeraude',
+                    'red': 'Rubis',
+                    'black': 'Onyx',
+                    'gold': 'Or'
+                };
+                return names[color] || color;
+            }
+
+            newGame() {
+                // Retourner à l'écran de sélection
+                document.getElementById('game-screen').style.display = 'none';
+                document.getElementById('setup-screen').style.display = 'block';
+                document.getElementById('infinite-indicator').style.display = 'none';
+                
+                // Réinitialiser les sélections
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+                document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('selected'));
+                document.querySelectorAll('.infinite-badge').forEach(badge => badge.style.display = 'none');
+                document.getElementById('start-game').disabled = true;
+                
+                // Supprimer l'écran de fin s'il existe
+                const endScreen = document.querySelector('[style*="position: fixed"]');
+                if (endScreen && endScreen.parentNode) {
+                    endScreen.parentNode.removeChild(endScreen);
+                }
+            }
+        }
+
+        // Démarrer le jeu quand la page est chargée
+        window.addEventListener('DOMContentLoaded', function() {
+            new SplendorInfiniteGame();
+        });
+    </script>
+</body>
+</html>
